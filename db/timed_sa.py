@@ -183,7 +183,7 @@ class versions_1t( _versions):
                                         c_dbid.label( 'dbid'  ),
                     ]+( c_oid   and [   c_oid.label(  'oid'   )] or []
                     )+( c_time2 and [   c_time2.label('time2' )] or []
-                    ), where )
+                    ), where ).alias( 'g02')
 
         g2= select( [   func.max( t.c.dbid ).label( 'dbid' ) ]
                 ).group_by( *(  #order in the group_by does not matter?
@@ -197,7 +197,7 @@ class versions_1t( _versions):
         return g2, where2
 
 
-    def _all_lastver( me, where =None, alias =None):
+    def _all_lastver( me, where =None, alias ='g2'):
         '''last versions of all objects: / последните версии на много обекти:
             for each distinct .oid,
                 get those of maximum .time      #g1
@@ -257,7 +257,7 @@ class versions_2t( versions_1t):
         t = select( [   c_time.label(   'time'  ),
                         c_time2.label(  'time2' ),
                         c_oid.label(    'oid'   ),
-                    ], where )
+                    ], where ).alias( 'g02')
         where1 = me._upto_time( c_time= t.c.time, c_time2= t.c.time2 )
         #where1 = me.filter_type( where1)
         g2= select( [   func.max( t.c.time2 ).label( 'time2'),
@@ -489,11 +489,11 @@ if __name__ == '__main__':
         print '====== oid,time last -group_by time'
         g1 = select( [   a.c.oid.label('mx'),
                         func.max( a.c.time).label('my'),
-                ] ).group_by( A.oid)
+                ] ).group_by( A.oid).alias('g1')
         for z in session.execute( g1): print z
 
         print '------- Atbl for last times';
-        o = a.select( (A.oid==g1.c.mx) & (A.time==g1.c.my) )
+        o = a.select( (A.oid==g1.c.mx) & (A.time==g1.c.my) ).alias('o1')
         test( session.execute( o), lasts_by_time_id, obj=False)
 
         print '======= dbid last -group_by oid,time'

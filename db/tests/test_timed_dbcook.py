@@ -17,18 +17,22 @@ import engine.timed.tests.test_base as satest
 
 if 0:
     from dbcook.usage.static_type import sa2static as orm
-    from static_type.types.atomary  import Number
+    from static_type.types.atomary  import Number, Bool
 else:
     from dbcook.usage import plainwrap as orm
     orm.NO_CLEANUP =1
     class Number( orm.Type): pass
+    class Bool( orm.Type): pass
 
 import dbcook.usage.samanager as sam
 SAdb = sam.SAdb
 SAdb.Builder = orm.Builder
 
 import sqlalchemy
-SAdb.fieldtypemap = { Number: dict( type= sqlalchemy.Integer, ), }
+SAdb.fieldtypemap = {
+    Number: dict( type= sqlalchemy.Integer, ),
+    Bool:   dict( type= sqlalchemy.Boolean, ),
+}
 
 class Config( sam.config.Config):
     repeat      = 1
@@ -239,7 +243,7 @@ if __name__ == '__main__':
 
         # bitemporal-required fields - TODO move in separate mixins
         obj_id      = Number()
-        disabled    = Number()
+        disabled    = Bool()
         # eo
 
         val = Number()
