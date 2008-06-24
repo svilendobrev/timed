@@ -392,7 +392,8 @@ def get_history( klas, query,
         obj_id, timeFrom, timeTo,
         with_disabled = False,
         lastver_only_if_same_time =True,
-        times_only =False,
+        clause_only =False,
+        times_only =False,  #only makes sense if not clause_only
         order_by_time_then_obj =False,
         **setup_kargs
     ):
@@ -406,19 +407,19 @@ def get_history( klas, query,
     order_by = [ v.c_oid, v.c_time ]
     if order_by_time_then_obj: order_by.reverse()
 
-    if times_only:
-        #transfirst = isinstance( times_only, str) and ',' in times_only and times_only.startswith('t')
-        where = v._range( timeFrom, timeTo, oid=obj_id, lastver_only_if_same_time=lastver_only_if_same_time )
-        if not with_disabled: where = v.filter_disabled( where)
-        q = select( [   v.c_time,
-                        v.c_time2,
-                    ], where
-                ).order_by( *order_by)
-        q = query.session.execute( q)
-    else:
-        q = v.range( timeFrom, timeTo, oid=obj_id, lastver_only_if_same_time=lastver_only_if_same_time )
-        if not with_disabled: q = v.filter_disabled( q)
-        q = q.order_by( *order_by)
+    range = (clause_only or times_only) and v._range or v.range
+    q = range( timeFrom, timeTo, oid=obj_id, lastver_only_if_same_time=lastver_only_if_same_time )
+    if not with_disabled: q = v.filter_disabled( q)
+    if not clause_only:
+        if times_only:
+            #transfirst = isinstance( times_only, str) and ',' in times_only and times_only.startswith('t')
+            q = select( [   v.c_time,
+                            v.c_time2,
+                        ], q
+                    ).order_by( *order_by)
+            q = query.session.execute( q)
+        else:
+            q = q.order_by( *order_by)
     return q
 
 if __name__ == '__main__':

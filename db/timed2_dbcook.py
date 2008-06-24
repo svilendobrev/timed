@@ -19,7 +19,6 @@ class Timed2Mixin( config.BaseClass4Mixin):
     time_trans  = config.TransTimeType()
 
     #config
-    rootTable           = classmethod( config.rootTable)        #needed only for timed2_sa_objid_discriminator
     defaultTimeContext  = classmethod( config.defaultTimeContext)
     now = config.now
     #eo config
@@ -69,7 +68,8 @@ class Timed2Mixin( config.BaseClass4Mixin):
             with_disabled =False,
             lastver_only_if_same_time =True,
             order_by_time_then_obj =False,
-            times_only =False,
+            clause_only =False,
+            times_only =False,  #only makes sense if not clause_only
             query =None
         ):
         'always returns many objects'
@@ -100,7 +100,8 @@ class Timed2Mixin( config.BaseClass4Mixin):
                         order_by_time_then_obj= order_by_time_then_obj,
                         dbid_attr= config.db_id_name,
 
-                        times_only = times_only
+                        clause_only = clause_only,
+                        times_only = times_only,
                 )
     get_obj_history = get_version_history
     @staticmethod

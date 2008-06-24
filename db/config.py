@@ -13,9 +13,6 @@ class runtime:              #configuration that can come e.g. from command line
     validAsTrans = False
     notimed = False
 
-def rootTable( klas ):
-    raise NotImplementedError
-    return mostBaseMappableDBTable_of_klas
 def defaultTimeContext( klas):
     raise NotImplementedError
     return bitemporal_tuple     #type,order XXX ???
