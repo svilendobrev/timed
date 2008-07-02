@@ -20,14 +20,14 @@ disabled_attr is also needed if filtering by disabled.
 
 the externaly-useful functions are:
   2t:
-    def get_lastversion_of_one( klas, query, obj_id,
+    get_lastversion_of_one( klas, query, obj_id,
             time =None, with_disabled =False, **setup_kargs):
-    def get_lastversion_of_many( klas, query, obj_id =(),
+    get_lastversion_of_many( klas, query, obj_id =(),
             time =None, with_disabled =False, **setup_kargs):
 
-    def get_lastversion( klas, query, obj_id =None,       #one or None or list/tuple
+    get_lastversion( klas, query, obj_id =None,       #one or None or list/tuple
             time =None, with_disabled =False, **setup_kargs):
-    def get_history( klas, query, obj_id,   #one or None or list/tuple
+    get_history( klas, query, obj_id,   #one or None or list/tuple
             timeFrom, timeTo,
             lastver_only_if_same_time =True,
             times_only =False,
