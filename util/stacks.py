@@ -7,6 +7,9 @@ class _StackBase( object):
 стек с автоматичен забърсвач - добавящите методи
 връщат обект-забърсвач, който при изчезването си маха последното ниво.
 Пример:
+$ stack with automatical cleaner - adding-methods return an object-cleaner, which
+when destroyed will restore the stack/pop the last level.
+Example:
     timestack = Stack( 'time', type=mytype)
     def func1( t):
         c = timestack( mytype( t))
@@ -20,15 +23,19 @@ class _StackBase( object):
         print current   #t1
 
    stack.last() в/у празен стек вдига IndexError
+   stack.last() over empty stack raises IndexError
 
    ВНИМАНИЕ!:
+   $WARNING:
     stack = Stack(...)
     a = stack.push( xx)
     b = stack.push( yy)
    работи както се очаква (последно е yy), докато
+   $works as expected (last is yy), while
     d = stack.push( xx)
     d = stack.push( yy)     #същото d!
    няма да направи каквото се очаква - остава xx !!
+   $ would not do the expected - xx stays.
 ''' #XXX
 
     __slots__ = ('type', 'name')
@@ -73,7 +80,7 @@ class _StackBase( object):
 ###############
 
 class Stack( _StackBase):
-    __doc__ = 'обикновен ' + _StackBase.__doc__
+    __doc__ = 'plain/обикновен ' + _StackBase.__doc__
     __slots__ = ( '__stack', )
     def __init__( me, *a,**k):
         me.__stack = []
@@ -83,7 +90,7 @@ class Stack( _StackBase):
 import threading
 
 class StackPerThread( _StackBase):
-    __doc__ = 'уникален за нишката ' + _StackBase.__doc__
+    __doc__ = 'thread-uniq/уникален за нишката ' + _StackBase.__doc__
     __slots__ = ('_stack',)
     _thread_default = threading.local()
     def __init__( me, name, *a,**k):
