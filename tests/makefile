@@ -14,6 +14,7 @@ now: ../module_timed.test
 now: test.test
 now: ../timecontext.test
 now: ../setup.test
+now: timecontext2.test
 
 now: ../objects.test
 now: ../example/check_module_translator.test

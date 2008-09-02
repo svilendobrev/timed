@@ -25,10 +25,11 @@ class HorTestRunner( unittest.TextTestRunner):
         return HorTestResult( me.stream, me.descriptions, me.verbosity)
 
 class HorTestCase( unittest.TestCase):
+    destroyMethod = docString = setupMethod = testMethod = None
     def __init__( me):
         unittest.TestCase.__init__( me, methodName ='testRun') #lius 10m vdesno
-        me.docString = me.setupMethod = me.testMethod = None
     def setUp( me): me.setupMethod()
+    def tearDown( me): me.destroyMethod and me.destroyMethod()
     def testRun( me): me.testMethod()
     def shortDescription( me):
         doc = "%s %s/%s" % ( me, me.docString, me.__class__.__name__)
@@ -67,14 +68,16 @@ class HorTestCase( unittest.TestCase):
                 print ' WARNING: second diff gives no diff ??!!'
             raise
 
-def testMain( testcases, verbosity =0, exit_on_error =True):
+def testMain( testcases, verbosity =0, exit_on_error =True, no_stderr =False):
     import sys
     verbosity = max( verbosity, sys.argv.count('-v') )
     suite = unittest.TestSuite()
     for case in testcases:
         case.verbosity = verbosity
         suite.addTest( case)
-    r = HorTestRunner( descriptions= True, verbosity= verbosity).run( suite).wasSuccessful()
+    r = HorTestRunner( descriptions= True, verbosity= verbosity,
+                        stream =no_stderr and sys.stdout or sys.stderr
+                ).run( suite).wasSuccessful()
     if exit_on_error and not r:
         sys.exit( not r)
     return r

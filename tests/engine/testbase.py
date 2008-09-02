@@ -23,7 +23,7 @@ class BaseTestSample:
 #    def __str__( me): pass
     pass
 
-SUBSEP = 10*'-'
+SUBSEP = 4*'-'
 
 class BaseTestCase( object):
     '''used as base class for app tests
@@ -42,9 +42,13 @@ class BaseTestCase( object):
             me.testSamples = testSamples        # [ BaseTestSample ]
         me.currentSample = None
 
+    initial_sortkey = None
     def setup( me):
         if me.verbosity>2: print
-        for f in me.initialState:
+        initialState = me.initialState
+        if me.initial_sortkey:
+            initialState = sorted( initialState, key=me.initial_sortkey)
+        for f in initialState:
             me.setupEach( f)
             if me.verbosity>2: print f
 
@@ -67,34 +71,38 @@ class BaseTestCase( object):
             expected = me.currentSample.expected    #see test_timed many objids case - why this is moved here
             if me.verbosity:    print result == expected and 'OK' or 'FAILED'
             if me.verbosity>1:
-                x = 'Result: %(result)s ; Expected: %(expected)s'% vars()
                 a = getattr( t, 'testResult', None)
                 if a: x = a( result) # result printing implemented in the sample
+                else: x = 'Result: %(result)s ; Expected: %(expected)s'% vars()
                 print t.testData(), x
+                print me
 #            if not mustNotTest:
             me.assertEquals( result, expected)
 
     currentRes = None   #always existing
-    def systemState( me): return None
+    systemState = None
     def __str__( me):
         ''' Използва се за показване на резултата при грешен/неминал тест. '''
         if not me.currentSample: return ''
 
         res = '\n'.join( str(f) for f in me.initialState )
-        systemState = me.systemState()
         result = me.currentRes
         sample = me.currentSample
         expect = sample.expected
         sample_name = sample.name
 
+        title = getattr( me, 'title', '')
+        systemState = me.systemState
+        if callable( systemState): systemState = systemState()
         if systemState: res += '''
 systemState: %(systemState)s'''
         res += '''
 result: %(result)s
 expect: %(expect)s
 sample: %(sample)s
-%(sample_name)r FROM''' % locals() #след FROM се показва името на тест case-а
-        return res
+%(title)s
+%(sample_name)r FROM'''     #след FROM се показва името на тест case-а
+        return res % locals()
 
 from testutils import HorTestCase
 class Case( BaseTestCase, HorTestCase):
