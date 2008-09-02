@@ -59,20 +59,9 @@ eдиният е _точната_ стойност в момента на изтриване (2,3,4 дават това),
 
 '''
 
-class _STORAGE:
-    WRAPPER_TUPLE = 2
-    OBJECT_ATTR = 3
-    SYMBOL_INSTEAD_OF_OBJECT = 5
-    #SEPARATE_HISTORY6 = 6 #... всичко е друго!
 
-#съобщаване/изнасяне
-#? сега е а)
-
-class Disabled4Timed( object):
+class _Disabled4Timed( object):
     __slots__ = ()
-    _STORAGE = _STORAGE
-
-    STORAGE_TYPE = _STORAGE.WRAPPER_TUPLE
     DONT_DISABLE_ALREADY_DISABLED = False
 
     # достъп до Timed* основа:
@@ -82,63 +71,44 @@ class Disabled4Timed( object):
     #_get_range_val()
 
   #################
-    if STORAGE_TYPE == _STORAGE.SYMBOL_INSTEAD_OF_OBJECT:
-        class Symbol4Disabled: pass
-    @classmethod
-    def _decode( me, value):
-        STORAGE_TYPE = me.STORAGE_TYPE
-        if STORAGE_TYPE == _STORAGE.WRAPPER_TUPLE:
-            value,disabled = value      #value НЯМА да знае дали е disabled !
-        elif STORAGE_TYPE == _STORAGE.OBJECT_ATTR:
-            disabled = value.disabled   #value си носи disabled
-        elif STORAGE_TYPE == _STORAGE.SYMBOL_INSTEAD_OF_OBJECT:
-            disabled = value is me.Symbol4Disabled
-        else: raise NotImplementedError
-        return value,disabled
 
-    #XXX only_value= е явно за да се знае;
-    #XXX иначе (ако отиде в kargs), не се знае какво е по default в _get_val -> какъв е резултата
-    def _get( me, time, with_disabled =False, only_value =True, **kargs):
-        value = me._get_val( time, only_value=only_value, **kargs)
-        if value is me.NOT_FOUND:
-            return value            #none yet
+    def _encode( me, value, disabled): raise NotImplementedError
+    def _decode( me, value): raise NotImplementedError
 
-        if not only_value: rtime,value = value
+    def _interpret_value( me, value, with_disabled, only_value):
+        #if not only_value:
+        rkey,value = value
         value,disabled = me._decode( value)
         if disabled:
             if not with_disabled:
                 return me.NOT_FOUND
             assert me.STORAGE_TYPE != _STORAGE.SYMBOL_INSTEAD_OF_OBJECT
+                # извикано през _get
                 #XXX при СИМВОЛ: трябва да намери последната валидна стойност ПРЕДИ изтриването.
                 #XXX изисква поддръжка от Timed* нивото!
-        if not only_value: value = rtime,value
-        return value
+
+                # извикано през _getRange
+                #XXX при СИМВОЛ: какво да се сложи тука: r[-1]? или нещо като None?
+        return me._result( rkey, value, only_value, convert_key2time=False)
+
+    #XXX only_value= е явно за да се знае;
+    #XXX иначе (ако отиде в kargs), не се знае какво е по default в _get_val -> какъв е резултата
+    def _get( me, time, with_disabled =False, only_value =True, **kargs):
+        value = me._get_val( time, only_value=False, **kargs)
+        if value is me.NOT_FOUND:
+            return value            #none yet
+        return me._interpret_value( value, with_disabled, only_value)
 
     def _getRange( me, timeFrom, timeTo, with_disabled =False, only_value =True, **kargs):
         r = []
-        for value in me._get_range_val( timeFrom, timeTo, only_value=only_value, **kargs):
-            if not only_value: rtime,value = value
-            value,disabled = me._decode( value)
-            if disabled:
-                if not with_disabled:
-                    continue
-                assert me.STORAGE_TYPE != _STORAGE.SYMBOL_INSTEAD_OF_OBJECT
-                    #XXX при СИМВОЛ: какво да се сложи тука: r[-1]? или нещо като None?
-            if not only_value: value = rtime,value
+        for value in me._get_range_val( timeFrom, timeTo, only_value=False, **kargs):
+            value = me._interpret_value( value, with_disabled, only_value)
+            if value is me.NOT_FOUND: continue
             r.append( value)
         return r
 
     def _put( me, value, time, disabled =False):
-        STORAGE_TYPE = me.STORAGE_TYPE
-        if STORAGE_TYPE == _STORAGE.WRAPPER_TUPLE:
-            value = value,disabled
-        elif STORAGE_TYPE == _STORAGE.OBJECT_ATTR:
-            value.disabled = disabled
-            #XXX тук трябва ли да се прави копие?
-            #except AttributeError: #error, cannot be disabled
-        elif STORAGE_TYPE == _STORAGE.SYMBOL_INSTEAD_OF_OBJECT:
-            if disabled: value = me.Symbol4Disabled
-        else: raise NotImplementedError
+        value = me._encode( value, disabled)
         me._put_val( value, time)
 
     def disable( me, time):
@@ -147,5 +117,24 @@ class Disabled4Timed( object):
         if value is not me.NOT_FOUND:
             me._put( value, time, disabled=True)
     delete = disable
+
+
+class Disabled4Timed_WrapperTuple( _Disabled4Timed): #value НЯМА да знае дали е disabled !
+    def _encode( me, value, disabled): return (value, disabled)
+    def _decode( me, value): return value
+
+class Disabled4Timed_SymbolInsteadOfObject( _Disabled4Timed):
+    class Symbol4Disabled: pass
+    def _encode( me, value, disabled): return me.Symbol4Disabled
+    def _decode( me, value): return (value, value is me.Symbol4Disabled)
+
+class Disabled4Timed_ObjectAttr( _Disabled4Timed): #value си носи disabled
+    #XXX тук трябва ли да се прави копие? #except AttributeError:
+    #error, cannot be disabled
+    def _encode( me, value, disabled): return disabled
+    def _decode( me, value): return (value, value.disabled)
+
+Disabled4Timed = Disabled4Timed_WrapperTuple
+
 
 # vim:ts=4:sw=4:expandtab:enc=cp1251:fenc=

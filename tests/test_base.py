@@ -29,31 +29,31 @@ class _Timed2_withDisabled_protocol:
 
 class TimedTestSimpleCase( Case):
     'base4test'
-    Timed2_withDisabled_klas = None     #klas with additional get.with_disabled, put.disabled args
+    factory4Timed2_withDisabled = None     #klas with additional get.with_disabled, put.disabled args
 
     def __init__( me, doc, inputDatabase, testingSamples):
         Case.__init__( me, doc, inputDatabase, testingSamples)
         me._testDefaultTime = False
-        me.obj = _Timed2_withDisabled_protocol.EnforcingWrapper( me.Timed2_withDisabled_klas )
+        me.obj = _Timed2_withDisabled_protocol.EnforcingWrapper( me.factory4Timed2_withDisabled )
     def setupEach( me, f):
         me.obj.put( value=f.value, trans=f.trans, valid=f.valid, disabled=(f.status == 'd') )
     def testEach( me, t):
         if me._testDefaultTime: t.trans = t.valid = datetime.now()
         return me.obj.get( trans=t.trans, valid=t.valid, with_disabled=False)
-    def systemState( me): return str( me.obj)
+    _systemState = ''
+    def systemState( me): return '\n'.join( [me._systemState, str( me.obj)] )
 
-
-class TimedCombinationsTestCase( TimedTestSimpleCase):
-    def setup( me):
-        import comb
-        i = 0
-        comb.res = []
-        for vday, rday in comb.makeCombinations( list(range(1, 20, 2)), 2):
-            valid = datetime( 2006, 2, vday)
-            trans = datetime( 2006, 2, rday)
-            me.obj.put( value= i, trans= trans, valid= valid)
-            if me.verbosity > 2: print 'DB:', trans, valid, ' value', i
-            i += 1
+def combi( InitialState):
+    import comb
+    i = 0
+    comb.res = []
+    r = []
+    for vday, rday in comb.makeCombinations( list(range(3, 20, 2)), 2):
+        valid = datetime( 2006, 2, vday)
+        trans = datetime( 2006, 2, rday)
+        r.append( InitialState( value= i, trans= trans, valid= valid, status='u'))
+        i += 1
+    return r
 
 class TimedDefaultGetTestCase( TimedTestSimpleCase):
     ''' tests getting default (most recent) object
@@ -68,22 +68,25 @@ class TimedRangeTestCase( TimedTestSimpleCase):
     def testEach( me, t):
         return me.obj.getRange( trans=t.trans, validFrom=t.valid, validTo=t.validTo, with_disabled=False)
 
-def test( Timed2_withDisabled_klas, verbosity =VERBOSE, title= None):
-    TimedTestSimpleCase.Timed2_withDisabled_klas = Timed2_withDisabled_klas
+def test( factory4Timed2_withDisabled, verbosity =VERBOSE, title= None, **kargs):
+    TimedTestSimpleCase.factory4Timed2_withDisabled = factory4Timed2_withDisabled
     import testdata
-    t1 = TimedTestSimpleCase(       'test2_idb2',   testdata.idb2,  testdata.test2)
-    t2 = TimedTestSimpleCase(       'test0_idb0',   testdata.idb0,  testdata.test0)
-    t3 = TimedTestSimpleCase(       'test1_idb1',   testdata.idb1,  testdata.test1)
-    t4 = TimedCombinationsTestCase( 'testComb',     [],             testdata.testComb)
-    t5 = TimedDefaultGetTestCase(   'test_default', testdata.idbDefault, testdata.testDefault)
-    t6 = TimedRangeTestCase(        'test_range',   testdata.idb_range,  testdata.testRange)
-    t7 = TimedTestSimpleCase(       'test_false',   testdata.idb_false,  testdata.test_false)
-    t8 = TimedRangeTestCase(        'test_range_false', testdata.idb_false,  testdata.test_range_false)
-    cases = [ t1, t2, t3, t4, t5, t6,
-        #t7, t8     #fix these to work for SA too - cant as SA is strong-typed
+    #t1= TimedTestSimpleCase(    'test2_idb2',   testdata.idb2,  testdata.test2)
+    t2= TimedTestSimpleCase(    'test0_idb0',   testdata.idb0,  testdata.test0)
+    #t3= TimedTestSimpleCase(    'test1_idb1',   testdata.idb1,  testdata.test1)
+    t4= TimedTestSimpleCase(    'testComb',     combi( testdata.InitialState), testdata.testComb)
+    t5= TimedDefaultGetTestCase('test_default', testdata.idbDefault, testdata.testDefault)
+    t6= TimedRangeTestCase(     'test_range',   testdata.idb_range,  testdata.testRange)
+    t7= TimedTestSimpleCase(    'test_false',   testdata.idb_false,  testdata.test_false)
+    t8= TimedRangeTestCase(     'test_range_false', testdata.idb_false,  testdata.test_range_false)
+    t9= TimedTestSimpleCase(    'test3_idb3',    testdata.idb3,  testdata.test3)
+    cases = [ t2, t4, t5, t6, t9
+        #t7, t1, t8     #fix these to work for SA too - cant as SA is strong-typed
     ]
     sep = '\n\n==================, '
-    if title: print sep+title
-    return testMain( cases, verbosity= verbosity)
+    if title:
+        print sep+title
+        Case.title = title
+    return testMain( cases, verbosity= verbosity, **kargs)
 
 # vim:ts=4:sw=4:expandtab

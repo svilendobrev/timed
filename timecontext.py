@@ -2,14 +2,13 @@
 # -*- coding: cp1251 -*-
 
 '''
-TimeContext: времеви контекст на дадена операция/промяна - дву-временен (bi-temporal).
+TimeContext: дву-времеви контекст на дадена операция/промяна (bi-temporal).
     trans_time: време на извършване на Транзакцията/промяната
-    valid_time: за/от кога е валидна операцията/промяната (вальор)
+    valid_time: за/от кога е валидна/важи операцията/промяната (вальор)
 изисквания:
- - да се ползва като подреждаем обект (наредена двойка?) в Timed*
  - да се ползват атрибутите му поотделно: t.trans, t.valid
  - да се ползва навсякъде ВМЕСТО време - _това_ е времето
-т.е. макс. скорост/удобство и мин.място
+т.е. макс. скорост/удобство и мин.място; изискването за пряка употребяемост вместо ключ в Timed2 отпада
 
 Всички време-зависими данни/алгоритми се извличат по такъв времеви-контекст.
     напр. за x = a+b, където а и b са времеви, трябва да изглежда така:
@@ -43,43 +42,59 @@ TimeContext: времеви контекст на дадена операция/промяна - дву-временен (bi-temp
 
 class TimeContext( object):
     '''
-    Това е наредена двойка, НО САМО за ускоряване на работата.
-    НИКОГА не разчитай на подредбата вътре!
-        - четене: ползвай .trans, .valid, .as_trans_valid() и .as_valid_trans().
-        - създаване: само чрез keyword аргументи (trans=,valid=),
-            или от копие на друг такъв.
-    (Навсякъде вместо valid и trans може да се ползват valid_time и trans_time)
+    четене: .trans, .valid (и вариантите име valid_time/time_valid, trans_time/time_trans)
+    като наредена двойка: .as_trans_valid(), .as_valid_trans()
+    може да се копира: .copy()
+    създаване: само чрез именовани аргументи (trans=,valid=)
+     valid: минава през .checkTime() валидатор/преобразувател (по подразбиране
+                само проверка за тип TimeContext.Time)
+     trans: съответно checkTimeTrans/TimeTrans, които по подразбиране са същите като горните
 
-    Всички времена трябва да са от тип TimeContext.Time (променяемо);
-    (ако има отделно TransTime, trans трябва да е TransTime,
-
-    добре е също така точностите на всички записани времена, както и на
-    времената по които се търси, да са еднакви, Това си остава
-    пожелание - не може да се наложи.
+    добре е точностите на всички времена да са еднакви, били те записани или за търсене.
+    Това си остава пожелание - не може да се наложи.
     '''
-    __slots__ = 'trans valid'.split()
+    __slots__ = '_trans _valid'.split()
 
-    Time = object
-#    TransTime = None
+    Time = object       #външно видим
+
+    Time_type = None    #вътрешна проверка, може да е по-базово от Time
     @classmethod
-    def isTime( klas, time): return isinstance( time, klas.Time)
-    _isTime = isTime    #save it
+    def checkTime( klas, time): return isinstance( time, klas.Time_type or klas.Time)
+    _checkTime = checkTime    #save it
+
+    TimeTrans_type = None
     @classmethod
-    def isTransTime( klas, time): return isinstance( time, getattr( klas, 'TransTime', klas.Time))
-    _isTransTime = isTransTime #save it
+    def checkTimeTrans( klas, time):
+        if klas.TimeTrans_type: return isinstance( time, klas.TimeTrans_type)
+        return klas.checkTime( time)
+    _checkTimeTrans = checkTimeTrans #save it
+
+    def _set( me, name, checker, value):
+        istime = checker( value)
+        if isinstance( istime, bool): assert istime, '%(name)s ?= %(value)r' % locals()
+        else: value = istime
+        setattr( me, name, value)
+
+    valid = property( lambda me: me._valid, lambda me, v: me._set( '_valid', me._checkTime, v) )
+    trans = property( lambda me: me._trans, lambda me, v: me._set( '_trans', me._checkTimeTrans, v) )
+
+    def normalize( me):
+        '''привеждане на времената в краен-употребяем вид, ползвай преди запис
+            $convert the times into end-usable form, use just before writing'''
+        assert me._checkTime( me.valid)
+        assert me._checkTimeTrans( me.trans)
+        pass
 
     def copy( me):
         return me.__class__( valid= me.valid, trans= me.trans)
 
     def __init__( me, **kargs):
-        ''' constructor( trans=, valid=) '''
+        'constructor( trans=, valid=)'
         return me.__init__2( **kargs)
 
     def __init__2( me, valid, trans):
-        assert me.isTime( valid), `valid`
-        assert me.isTransTime( trans), `trans`
-        me.trans = trans
         me.valid = valid
+        me.trans = trans
 
     if 0:
         class _Pickler( object):
@@ -94,14 +109,14 @@ class TimeContext( object):
             me.trans = statedict[ 'trans']
             me.valid = statedict[ 'valid']
 
-    time_valid = valid_time = property( lambda me: me.valid)
-    time_trans = trans_time = property( lambda me: me.trans)
-    def as_trans_valid( me): return me.trans, me.valid
-    def as_valid_trans( me): return me.valid, me.trans
-    def __str__( me): return 'TimeContext( trans=%r, valid=%r)' % (me.trans, me.valid)
+    time_valid = valid_time = valid #property( lambda me: me.valid)
+    time_trans = trans_time = trans #property( lambda me: me.trans)
+    def as_trans_valid( me): return me._trans, me._valid
+    def as_valid_trans( me): return me._valid, me._trans
+    def __str__( me): return 'TimeContext( trans=%r, valid=%r)' % (me._trans, me._valid)
     __repr__ = __str__
-    def __eq__( me, o): return me.trans==o.trans and me.valid==o.valid
-    def __ne__( me, o): return me.trans!=o.trans or  me.valid!=o.valid
+    def __eq__( me, o): return me._trans == o._trans and me._valid == o._valid
+    def __ne__( me, o): return me._trans != o._trans or  me._valid != o._valid
 
 ####
     if 0:
@@ -166,19 +181,31 @@ class TimeContext( object):
 TM = TimeContext
 #_Pickler = TimeContext._Pickler
 
-import timed2 as _timed2
-class _Timed2overTimeContext( _timed2.Timed2):
+
+class Timed2support4TimeContext( object):
     __slots__ = ()
-    TimeContext = TimeContext
+    TIME_CLASS4check = TimeContext.Time
 
     #to Timed2 internal protocol
-    def time2key_valid_trans( me, time):
-        assert isinstance( time, me.TimeContext)
+    @staticmethod
+    def time2key_valid_trans( time):
+        assert isinstance( time, TimeContext)
         return time.as_valid_trans()
 
     #from Timed2 internal protocol
-    def key_valid_trans2time( me, (valid, trans) ):
-        return me.TimeContext( trans=trans, valid=valid)
+    @staticmethod
+    def key_valid_trans2time( (valid, trans) ):
+        return TimeContext( trans=trans, valid=valid)
+
+    def set_time_context( me, timecontext):
+        assert isinstance( timecontext, TimeContext)
+        me.time_trans, me.time_valid = timecontext.as_trans_valid()
+
+
+import timed2 as _timed2
+class _Timed2overTimeContext( Timed2support4TimeContext, _timed2.Timed2):
+    __slots__ = ()
+    pass
 
 
 class _Test( _timed2.Test):

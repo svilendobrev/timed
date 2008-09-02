@@ -14,6 +14,9 @@ class Timed2_Wrapper4Disabled( Disabled4Timed, test_protocol2Timed_protocol):
     timed_put = Disabled4Timed._put
     timed_getRange = Disabled4Timed._getRange
 
+    def _result( me, *a, **ka):
+        return me.val._result( *a, **ka)
+
         # Disabled4Timed protocol:
     def _get_val( me, time, **kargs):   return me.val.get( time, **kargs )
     def _get_range_val( me, timeFrom, timeTo, **kargs): return me.val.getRange( timeFrom, timeTo, **kargs ) #not quite clear, but works

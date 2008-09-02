@@ -14,16 +14,16 @@ from util.stacks import Stack
 # този обект държи началния NEED_DEFAULT_CONTEXT.
 class _default: pass
 
-def setup( Time, now, Delta, isTime =None, isTransTime =None ):
-    '''връща този обект (т.е. наследниците му) прави и държи началния NEED_DEFAULT_CONTEXT.
+def setup( Time, now, Delta, Time_type =None, checkTime =None ):
+    '''прави и държи началния NEED_DEFAULT_CONTEXT.
     след изчезването на този обект, стекът трябва да е празен.
     може и трябва да има точно един такъв обект - иначе се прави нов стек ...
     '''
     TimeContext.Time  = Time
     TimeContext.Delta = Delta
     TimeContext.now   = now
-    TimeContext.isTime = isTime or TimeContext._isTime
-    TimeContext.isTransTime = isTransTime or TimeContext._isTransTime
+    TimeContext.Time_type = Time_type
+    if checkTime: TimeContext.checkTime = checkTime
 
     '''един единствен текущ времеви контекст - и всички го ползват.
         освен ако трябват успоредни контексти... едва ли.
@@ -39,32 +39,30 @@ def setup( Time, now, Delta, isTime =None, isTransTime =None ):
 #current = get = last = stack.last
 
 
-def USE_datetime():
+def USE_datetime( **kargs):
     from datetime import datetime, timedelta
     return setup(
         Time  = datetime,
         now   = datetime.now,
         Delta = timedelta,
+        **kargs
     )
-def USE_date():
+def USE_date( **kargs):
     from datetime import date, timedelta
     return setup(
         Time  = date,
         now   = date.today,
         Delta = timedelta,
+        **kargs
     )
 
 def _setup4iso( Time, now ):
     from datetime import timedelta
-
-    def isTime( klas, time): return isinstance( time, klas.Time._base )
-    isTime = classmethod( isTime)
     return setup(
         Time  = Time,
         now   = now,
         Delta = timedelta,
-        isTime = isTime,
-        isTransTime = isTime,
+        Time_type = Time._base,
     )
 
 def USE_datetime4iso():
@@ -90,14 +88,14 @@ def USE_str_yyyymmdd():
             assert isinstance( i, Delta)
             return me.__class__( Delta( me)-i )
 
-    def isTime( klas,time):    #yyyymmdd
+    def checkTime( klas,time):    #yyyymmdd
         return isinstance( time, klas.Time ) and len( time)==8 and time.isdigit()
 
     return setup(
         Time  = Time,
         now   = staticmethod( lambda : Time( '20060529') ),
         Delta = Delta,
-        isTime = classmethod( isTime)
+        checkTime = classmethod( checkTime)
     )
 
 def USE_int():
@@ -115,6 +113,7 @@ if __name__ == '__main__':
         _now = TimeContext.now()
         print '  now:', _now, type(_now)
 
+    tc_default = TimeContext.__dict__.copy()
     for f in [
             USE_int,
             USE_str_yyyymmdd,
@@ -123,6 +122,10 @@ if __name__ == '__main__':
             USE_datetime4iso,
             USE_date4iso,
         ]:
+        #restore TimeContext as was
+        for k,v in tc_default.iteritems():
+            if not k.startswith( '__'): setattr( TimeContext, k,v)
+        #setup another one
         f()
         test()
 

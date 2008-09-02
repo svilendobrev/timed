@@ -15,7 +15,7 @@ now: test.test
 now: ../timecontext.test
 now: ../setup.test
 
-now: ../example/objects.test
+now: ../objects.test
 now: ../example/check_module_translator.test
 
 # vim:ts=4:sw=4:noexpandtab

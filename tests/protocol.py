@@ -14,6 +14,9 @@ class test_protocol2Timed_protocol( object):
     @staticmethod
     def _valid_trans2time( valid, trans):
         return (trans,valid)
+    @classmethod
+    def _valid_trans2time4put( me, valid, trans):
+        return me._valid_trans2time( valid=valid, trans=trans)
 
         # _Timed2_withDisabled_protocol:
     def get( me, trans, valid, with_disabled =False):
@@ -31,7 +34,7 @@ class test_protocol2Timed_protocol( object):
         )
     def put( me, value, trans, valid, disabled =False):
         return me.timed_put( value,
-                me._valid_trans2time( trans=trans, valid=valid),
+                me._valid_trans2time4put( trans=trans, valid=valid),
                 disabled= disabled
         )
 

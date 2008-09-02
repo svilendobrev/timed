@@ -62,11 +62,16 @@ class Timed2( Timed1):
     def put( me, obj, time ):
         return Timed1.put( me, obj, me._intokey( *me.time2key_valid_trans( time) ))
 
-    def _result( me, rkey, robj, only_value):   #only_value= bool or callable
+    def _result( me, rkey, robj, only_value, convert_key2time =True):   #only_value= bool or callable
+        ''' once called with convert_key2time=True or only_value!=False, not callable anymore'''
+        if convert_key2time:
+            rtime = me.key_valid_trans2time( rkey)
+        else:
+            rtime = rkey
         if callable( only_value):
-            return only_value( rkey, robj)
+            return only_value( rtime, robj)
         if only_value: return robj
-        return me.key_valid_trans2time( rkey), robj
+        return rtime, robj
 
     def get( me, time, only_value =True):
         timeValid, timeTrans = me.time2key_valid_trans( time)

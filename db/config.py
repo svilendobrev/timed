@@ -2,11 +2,13 @@
 # -*- coding: cp1251 -*-
 from sqlalchemy import Numeric
 
+revision4trans  = False
 TransTimeType   = Numeric
 ValidTimeType   = Numeric
 BaseClass4Mixin = object
 BaseClass4check = object    #only subclasses of this are allowed to be bitemporal
 db_id_name      = 'dbid'    #dbcook.config.column4ID.name
+is_type_needed = True       #add type-discriminator-filter to oid
 
 class runtime:              #configuration that can come e.g. from command line
     forced_trans = False
