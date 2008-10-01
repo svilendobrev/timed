@@ -48,7 +48,7 @@ test_timed:
   repeat= :: number of times to test each sample
   notimed :: not used here
 '''
-config = Config( sam.config )
+config = Config()
 sam.config = config
 import sys
 
