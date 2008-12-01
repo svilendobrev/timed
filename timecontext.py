@@ -56,27 +56,26 @@ class TimeContext( object):
     __slots__ = '_trans _valid'.split()
 
     Time = object       #външно видим
-
     Time_type = None    #вътрешна проверка, може да е по-базово от Time
     @classmethod
-    def checkTime( klas, time): return isinstance( time, klas.Time_type or klas.Time)
+    def checkTime( klas, time):
+        assert isinstance( time, klas.Time_type or klas.Time), time
+        return time
     _checkTime = checkTime    #save it
 
+    #XXX твърде неудобно с isinstance( единия или другия)...
+    TimeTrans = None
     TimeTrans_type = None
     @classmethod
     def checkTimeTrans( klas, time):
-        if klas.TimeTrans_type: return isinstance( time, klas.TimeTrans_type)
+        if klas.TimeTrans_type or klas.TimeTrans:
+            assert isinstance( time, klas.TimeTrans_type or klas.TimeTrans), time
+            return time
         return klas.checkTime( time)
     _checkTimeTrans = checkTimeTrans #save it
 
-    def _set( me, name, checker, value):
-        istime = checker( value)
-        if isinstance( istime, bool): assert istime, '%(name)s ?= %(value)r' % locals()
-        else: value = istime
-        setattr( me, name, value)
-
-    valid = property( lambda me: me._valid, lambda me, v: me._set( '_valid', me._checkTime, v) )
-    trans = property( lambda me: me._trans, lambda me, v: me._set( '_trans', me._checkTimeTrans, v) )
+    valid = property( lambda me: me._valid, lambda me, v: setattr( me, '_valid', me.checkTime( v)) )
+    trans = property( lambda me: me._trans, lambda me, v: setattr( me, '_trans', me.checkTimeTrans( v)) )
 
     def normalize( me):
         '''привеждане на времената в краен-употребяем вид, ползвай преди запис

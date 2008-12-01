@@ -210,13 +210,13 @@ class Timed_Wrapper( test_protocol2Timed_protocol):
     str_query = ''
     def __str__( me): return 'query:\n'+me.str_query
     def timed_get( me, time, with_disabled =False, **kargs):
-        q = me.val.allInstances( time, with_disabled=with_disabled, **kargs )
+        q = me.val.allInstances( time=time, with_disabled=with_disabled, **kargs )
         me.str_query = str(q)
         return [ getattr( each, 'val', each) for each in q ] or None
     def timed_getRange( me, timeFrom, timeTo, with_disabled =False):
         oid = me.val.OBJIDs[ me.val.ixOBJID]
         #print 'RANGE:', oid
-        q = me.val.get_version_history( oid, timeFrom, timeTo, with_disabled=with_disabled )
+        q = me.val.get_version_history( oid, timeFrom=timeFrom, timeTo=timeTo, with_disabled=with_disabled )
         me.str_query = str(q)
         return [ getattr( each, 'val', each) for each in q ]
     def timed_put( me, value, time, disabled =False):

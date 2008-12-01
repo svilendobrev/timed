@@ -1,11 +1,14 @@
 #$Id$
 # -*- coding: cp1251 -*-
-
 def errorer( oserr):
     print oserr
 
 import os, os.path, imp, sys
 _DEBUG = 0
+
+def is_exe():
+    #return hasattr(sys, 'frozen') and sys.path[0].lower().endswith('.zip')
+    return sys.path[0].lower().endswith('.zip')
 
 PY_SUFFIXES = [ suffix for (suffix,mode,typ) in imp.get_suffixes() if typ == imp.PY_SOURCE ]
 
@@ -168,8 +171,22 @@ class Module( object):
 
 
     _walked = False
+
     def walk( me):
         if me._walked: return
+        if is_exe():
+            me.walk_zip()
+        else:
+            me.walk_dir()
+        me._walked = True
+
+    def walk_zip( me):
+        name = (me.name + os.path.sep + 'a').replace(os.path.sep, '.')
+        loader = lambda: __import__(name, fromlist=[name.split('.')[-1]])
+        time, mod = me.fname2time(name, loader)
+        me.timed.put( me.Ptr( mod), time )
+
+    def walk_dir( me):
         name = me.name
             # какво да се прави с главния/коренния файл? нищо.
             #root = me._load_root_module()
@@ -201,7 +218,6 @@ class Module( object):
                     mod = me.LAZY_LOAD and mf or loader()
                 me.timed.put( me.Ptr( mod), time )
             if not me.WALK_SUBDIRS: break
-        me._walked = True
 
 
 if __name__ == '__main__':

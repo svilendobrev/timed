@@ -20,14 +20,14 @@ disabled_attr is also needed if filtering by disabled.
 
 the externaly-useful functions are:
   2t:
-    get_lastversion_of_one( klas, query, obj_id,
+    get_lastversion_of_one( query, obj_id,
             time =None, timeFrom =None, with_disabled =False, **setup_kargs):
-    get_lastversion_of_many( klas, query, obj_id =(),
+    get_lastversion_of_many( query, obj_id =(),
             time =None, timeFrom =None, with_disabled =False, **setup_kargs):
 
-    get_lastversion( klas, query, obj_id =None,       #one or None or list/tuple
+    get_lastversion( query, obj_id =None,       #one or None or list/tuple
             time =None, timeFrom =None, with_disabled =False, **setup_kargs):
-    get_history( klas, query, obj_id,   #one or None or list/tuple
+    get_history( query, obj_id,   #one or None or list/tuple
             timeFrom, timeTo,
             lastver_only_if_same_time =True,
             times_only =False,
@@ -94,17 +94,18 @@ def and_clauses_or_None( *clauses):
 class _versions( object):
     def __init__( me, query, **kargs):
         me.query = query
-        me._initkargs( **kargs)
+        kargs4time = me._initkargs( **kargs)
+        me.filter_time( **kargs4time)
 
     def _query( me, filter =None):
         query = me.query
         if filter is not None: query = query.filter( filter)
         return query
 
-    def single_lastver( me, oid, time =None, where =None, **kargs4time):
+    def single_lastver( me, oid, where =None, **kargs4time):
         '''1t: last version of single object / последната версия на един обект'''
-        if _debug: print 'single_lastver oid=%(oid)s time=%(time)s where=%(where)s' % locals()
-        me.filter_time( timeTo=time, **kargs4time)
+        if _debug: print 'single_lastver oid=%(oid)s where=%(where)s times=%(kargs4time)s' % locals()
+        if kargs4time: me.filter_time( **kargs4time)
         query = me._query( and_clauses_or_None( me._where_time, where, me.filter_type() ))
         return query.filter( me.p_oid == oid
                     ).order_by( *(c.desc() for c in me._order_by4single() )
@@ -114,6 +115,10 @@ class _versions( object):
 
     def filter_time( me, **kargs):
         'use only with keyword-args!'
+        if 'time' in kargs:
+            assert 'timeTo' not in kargs
+            kargs['timeTo'] = kargs.pop('time')
+        if _debug: print 'times=%(kargs)s' % locals()
         return me._filter_time0( **kargs)
     def _filter_time0( me, timeTo =None, timeFrom =None,
                         exclusiveTo =False, exclusiveFrom =False,
@@ -138,13 +143,11 @@ class _versions( object):
             dbid_attr ='db_id',
             disabled_attr ='disabled',
             is_type_needed =True,
-            klas =None
+            **kargs4time
         ):
-        if not klas:
-            mapper = query2mapper( me.query)
-            klas = mapper.class_
-        else:
-            mapper = class_mapper( klas)
+        #if klas: mapper = class_mapper( klas)
+        mapper = query2mapper( me.query)
+        klas = mapper.class_
         me.klas = klas
         me.is_type_needed = is_type_needed
         me.c_type = mapper.polymorphic_on
@@ -153,6 +156,8 @@ class _versions( object):
         me.c_time = expression_element( getattr( klas, time_attr ))
         me.c_dbid = dbid_attr and expression_element( getattr( klas, dbid_attr ))
         me.disabled_attr = disabled_attr
+
+        return kargs4time
 
     @staticmethod
     def _filter( query, expr, isquery =None):
@@ -179,10 +184,10 @@ class _versions( object):
             test: model.models.Rabotodatel.populateEach / IkonomicheskiDeinosti.allInstances
         '''
         if not me.is_type_needed or not me.c_type: return None
-        if 1:
+        try: #needs query()!, sa>=4.5
+            mappers = me.query._with_polymorphic
+        except AttributeError:
             mappers = class_mapper( me.klas ).polymorphic_iterator()
-        else:   #needs query()!, sa>=4.5
-            mappers = query._with_polymorphic
         alltypes = [ m.polymorphic_identity for m in mappers ]
         return me.c_type.in_( alltypes)
 
@@ -250,9 +255,9 @@ class versions_1t( _versions):
         g2, where2 = me._alv_2_dbid( where=where1, alias=alias)
         return where2
 
-    def all_lastver( me, time =None, where =None, **kargs4time):
-        if _debug: print 'all_lastver time=%(time)s where=%(where)s' % locals()
-        me.filter_time( timeTo=time, **kargs4time)
+    def all_lastver( me, where =None, **kargs4time):
+        if _debug: print 'all_lastver where=%(where)s times=%(kargs4time)s ' % locals()
+        if kargs4time: me.filter_time( **kargs4time)
         return me._query( me._all_lastver( where))
 
     def range( me, *a, **k):
@@ -267,11 +272,12 @@ class versions_2t( versions_1t):
             time2key_valid_trans =lambda x:x,
             revision_attr= 0*'revision',  #another way to do timeTrans
             **kargs):
-        versions_1t._initkargs( me, time_attr= timeValid_attr, **kargs)
+        kargs4time = versions_1t._initkargs( me, time_attr= timeValid_attr, **kargs)
+        me.time2key_valid_trans = time2key_valid_trans
         assert bool(timeTrans_attr) != bool( revision_attr) #mutualy exclusive
         me.revision = bool(revision_attr)
         me.c_time2 = expression_element2( getattr( me.klas, timeTrans_attr or revision_attr))[0]
-        me.time2key_valid_trans = time2key_valid_trans
+        return kargs4time
     def _order_by4single( me): return me.c_time, me.c_time2, me.c_dbid
     def _order_by4multi( me, reverse =False):
         r = [ me.c_oid, me.c_time ]
@@ -344,7 +350,7 @@ class versions_2t( versions_1t):
         g3, where3 = me._alv_2_dbid(   where= where2, alias= 'g3')
         return where3
 
-    def _range( me, timeFrom, timeTo, oid =None, lastver_only_if_same_time =True, **kargs4time):
+    def _range( me, oid =None, lastver_only_if_same_time =True, **kargs4time):
         '''oid =None should give all oids
             for each distinct .oid,
                 for each distinct .time,
@@ -352,76 +358,58 @@ class versions_2t( versions_1t):
                         of which for each distinct .time2,
                             get the one of max .dbid    #r2
         '''
-        if _debug: print 'range oid=%(oid)s timeFrom=%(timeFrom)s timeTo=%(timeTo)s' % locals()
+        if _debug: print 'range oid=%(oid)s times=%(kargs4time)s' % locals()
         #IGNORING timeTransFrom ??
-        me.filter_time( timeTo=timeTo, timeFrom=timeFrom, **kargs4time)
+        if kargs4time: me.filter_time( **kargs4time)
 
         single_oid = _singular( oid)
         if single_oid:  where_oid = (me.p_oid == oid)
         elif oid:       where_oid = me.c_oid.in_( oid)     #XXX c_oid/p_oid
         else:           where_oid = None
-
         where = and_clauses_or_None( me._where_time, where_oid, me.filter_type())
         if not lastver_only_if_same_time:
             return where
         r1,where2 = me._alv_2_nodbid( where=where,  no_oid= single_oid, alias= 'r1')
-        if me.revision: return where2
+        if me.revision:
+            return where2
         r2,where3 = me._alv_2_dbid(   where=where2, no_oid= single_oid, alias= 'r2')
         return where3
 
-def get_1t_lastversion_of_one( query, oid, time =None, klas =None, **setup_kargs):
-    v = versions_1t( query, klas=klas, **setup_kargs)
+def get_1t_lastversion_of_one( query, oid, time =None, **setup_kargs):
+    v = versions_1t( query, **setup_kargs)
     return v.single_lastver( oid, time=time)
 
-def get_1t_lastversion_of_many( query, oid=(), time =None, klas =None, **setup_kargs):
-    v = versions_1t( query, klas=klas, **setup_kargs)
+def get_1t_lastversion_of_many( query, oid=(), time =None, **setup_kargs):
+    v = versions_1t( query, **setup_kargs)
     where = None
     if oid: where = v.c_oid.in_( oid)   #XXX c_oid/p_oid
     return v.all_lastver( time=time, where=where )
 
 
-def get_lastversion_of_one( klas, query,
+def get_lastversion_of_one( query,
         obj_id,
-        time =None,
-        timeFrom =None,
         with_disabled =False,
         **setup_kargs
     ):
 
-    v = versions_2t( query,
-            klas= klas,
-            **setup_kargs
-        )
-
+    v = versions_2t( query, **setup_kargs)
     q = None
     if not with_disabled: q = v.filter_disabled( q)
-    q = v.single_lastver( obj_id, time=time, timeFrom=timeFrom, where=q )
+    q = v.single_lastver( obj_id, where=q)
     return q
 
-def get_lastversion_of_many( klas, query,
+def get_lastversion_of_many( query,
         obj_id =(),
-        time =None,
-        timeFrom =None,
         with_disabled =False,
         order_by_time_then_obj =False,
         **setup_kargs
     ):
-
-    v = versions_2t( query,
-            klas= klas,
-            **setup_kargs
-        )
+    v = versions_2t( query, **setup_kargs)
     order_by = v._order_by4multi( order_by_time_then_obj)
-
-    if 0:
-        v.filter_time( timeTo=time)
-        w2 = v._all_lastver()
-        if not with_disabled: w2 = v.filter_disabled( w2)
-        return query.filter( w2)
 
     where = None
     if obj_id: where = v.c_oid.in_( obj_id) #XXX c_oid/p_oid
-    q = v.all_lastver( time, timeFrom=timeFrom, where=where )
+    q = v.all_lastver( where=where)
     if not with_disabled: q = v.filter_disabled( q)
     q = q.order_by( *order_by)
     return q
@@ -433,15 +421,15 @@ def _singular(x):
     except TypeError: return True
     return False
 
-def get_lastversion( klas, query,
+def get_lastversion( query,
         obj_id =None,       #one or None or list/tuple
         **kargs
     ):
     func = _singular( obj_id) and get_lastversion_of_one or get_lastversion_of_many
-    return func( klas, query, obj_id= obj_id, **kargs)
+    return func( query, obj_id= obj_id, **kargs)
 
-def get_history( klas, query,
-        obj_id, timeFrom, timeTo,
+def get_history( query,
+        obj_id,
         with_disabled = False,
         lastver_only_if_same_time =True,
         clause_only =False,
@@ -450,16 +438,11 @@ def get_history( klas, query,
         **setup_kargs
     ):
 
-    #print kargs4timeclause_ignore.keys()
-    v = versions_2t( query,
-            klas= klas,
-            **setup_kargs
-        )
-
+    v = versions_2t( query, **setup_kargs)
     order_by = v._order_by4multi( order_by_time_then_obj)
 
     range = (clause_only or times_only) and v._range or v.range
-    q = range( timeFrom, timeTo, oid=obj_id, lastver_only_if_same_time=lastver_only_if_same_time )
+    q = range( oid=obj_id, lastver_only_if_same_time=lastver_only_if_same_time)
     if not with_disabled: q = v.filter_disabled( q)
     if not clause_only:
         if times_only:

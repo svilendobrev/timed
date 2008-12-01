@@ -47,16 +47,16 @@ see timed_sa for details/changing names of these.
 class Timed2Mixin( Timed2Mixin_data):
     __slots__ = ()
     #config
-    defaultTimeContext4query_to    = classmethod( config.defaultTimeContext)
-    defaultTimeContext4query_from  = classmethod( config.defaultTimeContext)
+    default4query_timeTo    = classmethod( config.defaultTimeContext)
+    default4query_timeFrom  = classmethod( config.defaultTimeContext)
     #now = config.now
     symbol4timeTo_default = symbol4timeFrom_default = 'default'
     symbol4timeTo_ever    = symbol4timeFrom_ever    = 'ever'
     # several possibilities:
-    #  timeTo  ='default': replace with defaultTimeContext4query.to
+    #  timeTo  ='default': replace with default4query_timeTo
     #  timeTo  ='last' : any time forward (no filter: timeTo=None)
     #  timeFrom='first': any time back (no filter: timeFrom=None)
-    #  timeFrom='default': replace with defaultTimeContext4query.from
+    #  timeFrom='default': replace with default4query_timeFrom
     #   either one can be None or whatever
     #  now: defaultTimeContext4record -> trans & valid ???
     #
@@ -68,27 +68,58 @@ class Timed2Mixin( Timed2Mixin_data):
         return me.revision4trans and dict( timeTrans_attr='', revision_attr='time_trans') or {}
 
     @classmethod
-    def _make_timeTo( klas, time):
-        if time is klas.symbol4timeTo_default: time = klas.defaultTimeContext4query_to()
-        if time is klas.symbol4timeTo_ever: time = None
+    def _symbol2time( klas, time, isfrom):
+        symbol4default = isfrom and klas.symbol4timeFrom_default or klas.symbol4timeTo_default
+        symbol4ever    = isfrom and klas.symbol4timeFrom_ever    or klas.symbol4timeTo_ever
+        defaultFunc    = isfrom and klas.default4query_timeFrom  or klas.default4query_timeTo
+        if time is symbol4default: time = defaultFunc()
+        if time is symbol4ever: time = None
+        if time is not None:
+            r = []
+            #deftm = defaultFunc()
+            #if deftm is symbol4ever: deftm = (symbol4ever,symbol4ever)
+            #else: deftm = klas.time2key_valid_trans( deftm)
+            #print 3333333333333, time, deftm
+
+            #for x,xdef in zip( klas.time2key_valid_trans( time), deftm ):
+            deftm = None
+            for x in klas.time2key_valid_trans( time):
+                if x is symbol4default:
+                    if deftm is None:
+                        deftm = defaultFunc()
+                        deftm = deftm is symbol4ever and (symbol4ever,symbol4ever) or klas.time2key_valid_trans( deftm)
+                        x = deftm[0]
+                    else:
+                        x = deftm[1]
+                if x is symbol4ever: x = None
+                r.append(x)
+
+            #TODO: this required timeType to be able to hold None ??? XXX
+            time = klas.key_valid_trans2time( r)
+            #print 4444444444, time
         return time
+
+    @classmethod
+    def _make_timeTo( klas, time):
+        return klas._symbol2time( time, isfrom=False)
     @classmethod
     def _make_timeFrom( klas, time):
-        if time is klas.symbol4timeFrom_default: time = klas.defaultTimeContext4query_from()
-        if time is klas.symbol4timeFrom_ever: time = None
-        return time
+        return klas._symbol2time( time, isfrom=True)
 
     @classmethod
     def get_version_last( klas, obj_id =None, time =None, timeFrom =None,
             with_disabled =False,
-            query =None
+            query =None,
+            **kargs4time
         ):
         '''returns ONE object-version (or None) if single obj_id specified;
         else returns many objects'''
 
         if query is None: query = klas.allInstances_basic()
         if config.runtime.notimed: return query     #shunt4testing  - not proper
-        return timed2.get_lastversion( klas, query,
+        kargs = kargs4time
+        kargs.update( klas._revision4trans_kargs() )
+        return timed2.get_lastversion( query,
                         obj_id= obj_id,
                         time= klas._make_timeTo( time),
                         timeFrom= klas._make_timeFrom( timeFrom),
@@ -96,13 +127,13 @@ class Timed2Mixin( Timed2Mixin_data):
                         time2key_valid_trans= klas.time2key_valid_trans,
                         dbid_attr= config.db_id_name,
                         is_type_needed = config.is_type_needed,
-                        **klas._revision4trans_kargs()
+                        **kargs
                 )
     get_obj_lastversion = get_version_last
 
     @classmethod
-    def get_allobj_lastversion( klas, time =None, **kargs):
-        return klas.get_version_last( obj_id=None, time=time, **kargs)
+    def get_allobj_lastversion( klas, **kargs):
+        return klas.get_version_last( obj_id=None, **kargs)
     allInstances = get_allobj_lastversion
 
     @classmethod
@@ -112,15 +143,18 @@ class Timed2Mixin( Timed2Mixin_data):
             order_by_time_then_obj =False,
             clause_only =False,
             times_only =False,  #only makes sense if not clause_only
-            query =None
+            query =None,
+            **kargs4time
         ):
         'always returns many objects'
 
         if config.runtime.notimed: return None    #shunt4testing
-        assert issubclass( klas, config.BaseClass4check), klas
+        assert issubclass( klas, config.BaseClass4check), (klas,config.BaseClass4check)
         if query is None: query = klas.allInstances_basic()
+        kargs = kargs4time
+        kargs.update( klas._revision4trans_kargs() )
 
-        return timed2.get_history( klas, query,
+        return timed2.get_history( query,
                         obj_id,
                         timeFrom = klas._make_timeFrom( timeFrom),
                         timeTo = klas._make_timeTo( timeTo),
@@ -133,7 +167,7 @@ class Timed2Mixin( Timed2Mixin_data):
                         clause_only = clause_only,
                         times_only = times_only,
                         is_type_needed = config.is_type_needed,
-                        **klas._revision4trans_kargs()
+                        **kargs
                 )
     get_obj_history = get_version_history
 
