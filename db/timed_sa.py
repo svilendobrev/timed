@@ -509,7 +509,8 @@ if __name__ == '__main__':
     lasts_by_dbid_id  = set( a.db_id for a in lasts_by_dbid_obj )
 
     def test( q, expect, obj =True, db_id =True):
-        r = set( q )
+        r = list( q )
+        #if not obj: r = set( tuple(a) for a in r )         #XXX set(r) won't work!
         for z in r: print z
         assert set( (db_id and (obj and x.db_id or x['db_id']) or x)
                     for x in r ) == set( expect), '''
