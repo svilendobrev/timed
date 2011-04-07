@@ -20,7 +20,7 @@ see timed_sa for details/changing names of these.
 
     time_valid  = config.ValidTimeType()
     time_trans  = config.TransTimeType()
-    DBCOOK_nonnullables = 'time_trans time_valid'.split()
+    DBCOOK_nonoptionals= 'time_trans time_valid'.split()
     DBCOOK_no_mapping = True
 
     def pre_save( me):
