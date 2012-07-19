@@ -1,6 +1,6 @@
 
-from svd_util.testeng.testutils import testMain
-from svd_util.testeng.testbase import Case
+from svd_util.testeng.utils import testMain
+from svd_util.testeng.base import Case
 from datetime import datetime
 VERBOSE = 0
 

@@ -33,7 +33,7 @@ trans_allowed = [ len(kv)==1 and kv or kv[1]  for kv in priority_ascend[2:3] ]
 
 ###################################
 
-from svd_util.testeng.test_engine import *
+from svd_util.testeng.mainframe import *
 
 class Sample( SampleBase):
     def __init__( me, tcargs =(), tckargs ={}, normalized =False, **kargs):
