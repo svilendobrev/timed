@@ -1,7 +1,7 @@
 #$Id$
 import unittest
 
-class HorTestResult( unittest._TextTestResult):
+class AppTestResult( unittest._TextTestResult):
     "our test result respecting verbosity level to not show traceback always"
     def getDescription( me, test):
         return '\n\n' + unittest._TextTestResult.getDescription( me, test)
@@ -20,11 +20,11 @@ class HorTestResult( unittest._TextTestResult):
                 me.stream.writeln( str( err) )
 
 
-class HorTestRunner( unittest.TextTestRunner):
+class AppTestRunner( unittest.TextTestRunner):
     def _makeResult( me):
-        return HorTestResult( me.stream, me.descriptions, me.verbosity)
+        return AppTestResult( me.stream, me.descriptions, me.verbosity)
 
-class HorTestCase( unittest.TestCase):
+class AppTestCase( unittest.TestCase):
     destroyMethod = docString = setupMethod = testMethod = None
     def __init__( me):
         unittest.TestCase.__init__( me, methodName ='testRun') #lius 10m vdesno
@@ -75,7 +75,7 @@ def testMain( testcases, verbosity =0, exit_on_error =True, no_stderr =False):
     for case in testcases:
         case.verbosity = verbosity
         suite.addTest( case)
-    r = HorTestRunner( descriptions= True, verbosity= verbosity,
+    r = AppTestRunner( descriptions= True, verbosity= verbosity,
                         stream =no_stderr and sys.stdout or sys.stderr
                 ).run( suite).wasSuccessful()
     if exit_on_error and not r:

@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+# -*- coding: utf8 -*-
 
 class BaseState: pass
 class BaseTestSample:
@@ -17,8 +17,8 @@ class BaseTestSample:
     expected = None
     def testData( me): raise NotImplementedError
     def testResult( me, result):
-        '''обикновено се използва при показване, когато резултатът и очакваното не се
-        събират на един ред - за украсяване на debug изходите.'''
+        '''РѕР±РёРєРЅРѕРІРµРЅРѕ СЃРµ РёР·РїРѕР»Р·РІР° РїСЂРё РїРѕРєР°Р·РІР°РЅРµ, РєРѕРіР°С‚Рѕ СЂРµР·СѓР»С‚Р°С‚СЉС‚ Рё РѕС‡Р°РєРІР°РЅРѕС‚Рѕ РЅРµ СЃРµ
+        СЃСЉР±РёСЂР°С‚ РЅР° РµРґРёРЅ СЂРµРґ - Р·Р° СѓРєСЂР°СЃСЏРІР°РЅРµ РЅР° debug РёР·С…РѕРґРёС‚Рµ.'''
         raise NotImplementedError
 #    def __str__( me): pass
     pass
@@ -82,7 +82,7 @@ class BaseTestCase( object):
     currentRes = None   #always existing
     systemState = None
     def __str__( me):
-        ''' Използва се за показване на резултата при грешен/неминал тест. '''
+        ''' РР·РїРѕР»Р·РІР° СЃРµ Р·Р° РїРѕРєР°Р·РІР°РЅРµ РЅР° СЂРµР·СѓР»С‚Р°С‚Р° РїСЂРё РіСЂРµС€РµРЅ/РЅРµРјРёРЅР°Р» С‚РµСЃС‚. '''
         if not me.currentSample: return ''
 
         res = '\n'.join( str(f) for f in me.initialState )
@@ -101,26 +101,26 @@ result: %(result)s
 expect: %(expect)s
 sample: %(sample)s
 %(title)s
-%(sample_name)r FROM'''     #след FROM се показва името на тест case-а
+%(sample_name)r FROM'''     #СЃР»РµРґ FROM СЃРµ РїРѕРєР°Р·РІР° РёРјРµС‚Рѕ РЅР° С‚РµСЃС‚ case-Р°
         return res % locals()
 
-from testutils import HorTestCase
-class Case( BaseTestCase, HorTestCase):
-    ''' Това трябва да се наследява от конкретните тестове, където трябва да има методите:
-    setupEach или setup (НИКОГА и двата едновременно)
-    testEach или test (НИКОГА и двата едновременно)
-    xxxEach вариантите се ползват ако съответните начално състояние/ test примери (samples)
-    са колекция от еднотипни елементи отговарящи на протокола съответно на BaseState и
-    BaseTestCase. В този случай този клас се грижи и за правилното изпечатване на начални
-    състояния и тестови примери при различни нива на описателност (verbosity).
-    Ако се ползват setup/test варианта, потребителят на класа сам се грижи за
-    оправяне на изхода. Допустими са варианти setupEach с test или setup с testEach.
-    виж за пример engine/timed/test.py, model/simpleDB.py
+from testutils import AppTestCase
+class Case( BaseTestCase, AppTestCase):
+    ''' РўРѕРІР° С‚СЂСЏР±РІР° РґР° СЃРµ РЅР°СЃР»РµРґСЏРІР° РѕС‚ РєРѕРЅРєСЂРµС‚РЅРёС‚Рµ С‚РµСЃС‚РѕРІРµ, РєСЉРґРµС‚Рѕ С‚СЂСЏР±РІР° РґР° РёРјР° РјРµС‚РѕРґРёС‚Рµ:
+    setupEach РёР»Рё setup (РќРРљРћР“Рђ Рё РґРІР°С‚Р° РµРґРЅРѕРІСЂРµРјРµРЅРЅРѕ)
+    testEach РёР»Рё test (РќРРљРћР“Рђ Рё РґРІР°С‚Р° РµРґРЅРѕРІСЂРµРјРµРЅРЅРѕ)
+    xxxEach РІР°СЂРёР°РЅС‚РёС‚Рµ СЃРµ РїРѕР»Р·РІР°С‚ Р°РєРѕ СЃСЉРѕС‚РІРµС‚РЅРёС‚Рµ РЅР°С‡Р°Р»РЅРѕ СЃСЉСЃС‚РѕСЏРЅРёРµ/ test РїСЂРёРјРµСЂРё (samples)
+    СЃР° РєРѕР»РµРєС†РёСЏ РѕС‚ РµРґРЅРѕС‚РёРїРЅРё РµР»РµРјРµРЅС‚Рё РѕС‚РіРѕРІР°СЂСЏС‰Рё РЅР° РїСЂРѕС‚РѕРєРѕР»Р° СЃСЉРѕС‚РІРµС‚РЅРѕ РЅР° BaseState Рё
+    BaseTestCase. Р’ С‚РѕР·Рё СЃР»СѓС‡Р°Р№ С‚РѕР·Рё РєР»Р°СЃ СЃРµ РіСЂРёР¶Рё Рё Р·Р° РїСЂР°РІРёР»РЅРѕС‚Рѕ РёР·РїРµС‡Р°С‚РІР°РЅРµ РЅР° РЅР°С‡Р°Р»РЅРё
+    СЃСЉСЃС‚РѕСЏРЅРёСЏ Рё С‚РµСЃС‚РѕРІРё РїСЂРёРјРµСЂРё РїСЂРё СЂР°Р·Р»РёС‡РЅРё РЅРёРІР° РЅР° РѕРїРёСЃР°С‚РµР»РЅРѕСЃС‚ (verbosity).
+    РђРєРѕ СЃРµ РїРѕР»Р·РІР°С‚ setup/test РІР°СЂРёР°РЅС‚Р°, РїРѕС‚СЂРµР±РёС‚РµР»СЏС‚ РЅР° РєР»Р°СЃР° СЃР°Рј СЃРµ РіСЂРёР¶Рё Р·Р°
+    РѕРїСЂР°РІСЏРЅРµ РЅР° РёР·С…РѕРґР°. Р”РѕРїСѓСЃС‚РёРјРё СЃР° РІР°СЂРёР°РЅС‚Рё setupEach СЃ test РёР»Рё setup СЃ testEach.
+    РІРёР¶ Р·Р° РїСЂРёРјРµСЂ engine/timed/test.py, model/simpleDB.py
     '''
     def __init__( me, doc, inputDatabase, testingSamples):
-        HorTestCase.__init__( me)
+        AppTestCase.__init__( me)
         BaseTestCase.__init__( me, inputDatabase, testingSamples)
-        # following _must_ be set - in order HorTestCase to work
+        # following _must_ be set - in order AppTestCase to work
         me.docString = doc
         me.setupMethod = me.setup
         me.testMethod = me.test

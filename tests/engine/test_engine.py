@@ -1,15 +1,15 @@
 #$Id$
-# -*- coding: cp1251 -*-
+# -*- coding: utf8 -*-
 
 '''
-Машина за пускане на Тестове
-Работи с параметри от командния ред или дадени на TestMainframe()
-ползва се като се създаде обект TestMainframe()
+РњР°С€РёРЅР° Р·Р° РїСѓСЃРєР°РЅРµ РЅР° РўРµСЃС‚РѕРІРµ
+Р Р°Р±РѕС‚Рё СЃ РїР°СЂР°РјРµС‚СЂРё РѕС‚ РєРѕРјР°РЅРґРЅРёСЏ СЂРµРґ РёР»Рё РґР°РґРµРЅРё РЅР° TestMainframe()
+РїРѕР»Р·РІР° СЃРµ РєР°С‚Рѕ СЃРµ СЃСЉР·РґР°РґРµ РѕР±РµРєС‚ TestMainframe()
 '''
 import unittest
-from util.mix import myTestCase4Function
-# параметри от командния ред
-from util.config import Config
+from svd_util.mix import myTestCase4Function
+# РїР°СЂР°РјРµС‚СЂРё РѕС‚ РєРѕРјР°РЅРґРЅРёСЏ СЂРµРґ
+from svd_util.config import Config
 
 class Config( Config):
     _enable_type_conversion = False
@@ -21,25 +21,25 @@ class Config( Config):
     _help = '''
     errors    :: ( print traceback if error)
     all_cases ::  show all TestCases in the choosen module
-    module=   :: ( име на модул, от който да се заредят тестовете )
-    case= :: ( групата тестове, която да се пусне)
-    sample=   :: ( 1 или няколко тест-а, които да се изпълнят от дадена група)
+    module=   :: ( РёРјРµ РЅР° РјРѕРґСѓР», РѕС‚ РєРѕР№С‚Рѕ РґР° СЃРµ Р·Р°СЂРµРґСЏС‚ С‚РµСЃС‚РѕРІРµС‚Рµ )
+    case= :: ( РіСЂСѓРїР°С‚Р° С‚РµСЃС‚РѕРІРµ, РєРѕСЏС‚Рѕ РґР° СЃРµ РїСѓСЃРЅРµ)
+    sample=   :: ( 1 РёР»Рё РЅСЏРєРѕР»РєРѕ С‚РµСЃС‚-Р°, РєРѕРёС‚Рѕ РґР° СЃРµ РёР·РїСЉР»РЅСЏС‚ РѕС‚ РґР°РґРµРЅР° РіСЂСѓРїР°)
 '''
 config = Config()
 
 
 class SampleBase( object):
-    'Базов клас за Примери'
+    'Р‘Р°Р·РѕРІ РєР»Р°СЃ Р·Р° РџСЂРёРјРµСЂРё'
     ENGINE_ARGS = 'expect info name'.split()
     def __init__( me, **kargs):
         for k,v in kargs.iteritems():
             if k in me.ENGINE_ARGS:
                 setattr(me, k, v)
 
-from util.struct import DictAttr
+from svd_util.struct import DictAttr
 
 class TestBase( unittest.TestCase):
-    'Базов тестови клас! Името на наследниците му, които ще бъдат пускани трябва да започват с Test_'
+    'Р‘Р°Р·РѕРІ С‚РµСЃС‚РѕРІРё РєР»Р°СЃ! РРјРµС‚Рѕ РЅР° РЅР°СЃР»РµРґРЅРёС†РёС‚Рµ РјСѓ, РєРѕРёС‚Рѕ С‰Рµ Р±СЉРґР°С‚ РїСѓСЃРєР°РЅРё С‚СЂСЏР±РІР° РґР° Р·Р°РїРѕС‡РІР°С‚ СЃ Test_'
     case = None
     TESTOVE = []
     def test_me( me): pass
@@ -49,7 +49,7 @@ class TestBase( unittest.TestCase):
             me.case.setup( value, test.expect, test.info ).run( resulter)
 
 ############################
-from util.attr import issubclass
+from svd_util.attr import issubclass
 
 class TestMainframe( unittest.TestLoader):
     def __init__( me, module =None, testcase =None, sample =None):
@@ -58,7 +58,7 @@ class TestMainframe( unittest.TestLoader):
         me.testcase = testcase or config.case
         me.sample = sample or config.sample
         me.prevodach= {}
-        'prevodach = { "човешко" име : име от модула } - Опростени имена на cases '
+        'prevodach = { "С‡РѕРІРµС€РєРѕ" РёРјРµ : РёРјРµ РѕС‚ РјРѕРґСѓР»Р° } - РћРїСЂРѕСЃС‚РµРЅРё РёРјРµРЅР° РЅР° cases '
 
     def _importFromFile( me, name):
         assert name
@@ -95,7 +95,7 @@ class TestMainframe( unittest.TestLoader):
                             err.append(s)
         if err:
             print 40*'-'
-            for e in err: print '\nНе е намерен пример: %(e)s '%locals()
+            for e in err: print '\nРќРµ Рµ РЅР°РјРµСЂРµРЅ РїСЂРёРјРµСЂ: %(e)s '%locals()
         return gotovi_primeri
 
     def groupTests( me, module):
