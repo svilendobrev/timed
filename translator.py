@@ -1,5 +1,5 @@
-#$Id$
-# -*- coding: cp1251 -*-
+#sdobrev 2006
+'timed proxy, translating attr-access into attr.get( context)'
 
 def _get( obj, context):    #very careful about attribute access/try/except here!
     try: g = obj.get
@@ -30,7 +30,7 @@ class Translator1( object):
 Translator = Translator1.as_keys
 
 if __name__ == '__main__':
-    #тези не работят стабилно...
+    #not stable..
     class Translator0( object):
         ''' proxy, translating attr-access into get( attr, context)
             recursive over 1 obj

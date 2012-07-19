@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+# -*- coding: utf8 -*-
 
 from timed1 import Timed1
 import bisect
@@ -14,10 +14,10 @@ def range_date( dateFrom, dateTo):
 import operator
 class Timed2( Timed1):
     '''
-    2-времева история върху 1-времева.
-    key_valid_trans2time() / time2key_valid_trans() служат за преобразуване на
-    външното "2време" - по подразбиране tuple(timeTrans, timeValid) -  към/от
-    вътрешното 2време (вальор,транзакция), и може да се заместят.
+    2-РІСЂРµРјРµРІР° РёСЃС‚РѕСЂРёСЏ РІСЉСЂС…Сѓ 1-РІСЂРµРјРµРІР°.
+    key_valid_trans2time() / time2key_valid_trans() СЃР»СѓР¶Р°С‚ Р·Р° РїСЂРµРѕР±СЂР°Р·СѓРІР°РЅРµ РЅР°
+    РІСЉРЅС€РЅРѕС‚Рѕ "2РІСЂРµРјРµ" - РїРѕ РїРѕРґСЂР°Р·Р±РёСЂР°РЅРµ tuple(timeTrans, timeValid) -  РєСЉРј/РѕС‚
+    РІСЉС‚СЂРµС€РЅРѕС‚Рѕ 2РІСЂРµРјРµ (РІР°Р»СЊРѕСЂ,С‚СЂР°РЅР·Р°РєС†РёСЏ), Рё РјРѕР¶Рµ РґР° СЃРµ Р·Р°РјРµСЃС‚СЏС‚.
 
     bi-temporal over 1-temporal.
     key_valid_trans2time() / time2key_valid_trans() are used to convert the
@@ -25,7 +25,7 @@ class Timed2( Timed1):
     internal 2time (valid,trans), and can be overloaded.
     '''
 
-    #тези може да се подменят - преводачи от/към ключа и външното време
+    #С‚РµР·Рё РјРѕР¶Рµ РґР° СЃРµ РїРѕРґРјРµРЅСЏС‚ - РїСЂРµРІРѕРґР°С‡Рё РѕС‚/РєСЉРј РєР»СЋС‡Р° Рё РІСЉРЅС€РЅРѕС‚Рѕ РІСЂРµРјРµ
     #by default, time=(trans,valid)
     @staticmethod
     def key_valid_trans2time( tkey):
@@ -41,10 +41,10 @@ class Timed2( Timed1):
     #It is needed to allow searching for items BEFORE (timeValid,*)
     #without touching timeTrans, i.e. represent transFrom=ZERO without knowing what time is.
     #
-    #вътрешен ключ се прави от вътрешното 2време (v,t) чрез добавяне на (още едно)
-    #междинно стъпало/разделител - виж timed1.put за обяснение на стъпалото.
-    #То е нужно за да може да се търси нещо ПРЕДИ (вальор,*) без да се закача transFrom,
-    #   т.е. да се представи transFrom=НУЛА без да се знае какво е време.
+    #РІСЉС‚СЂРµС€РµРЅ РєР»СЋС‡ СЃРµ РїСЂР°РІРё РѕС‚ РІСЉС‚СЂРµС€РЅРѕС‚Рѕ 2РІСЂРµРјРµ (v,t) С‡СЂРµР· РґРѕР±Р°РІСЏРЅРµ РЅР° (РѕС‰Рµ РµРґРЅРѕ)
+    #РјРµР¶РґРёРЅРЅРѕ СЃС‚СЉРїР°Р»Рѕ/СЂР°Р·РґРµР»РёС‚РµР» - РІРёР¶ timed1.put Р·Р° РѕР±СЏСЃРЅРµРЅРёРµ РЅР° СЃС‚СЉРїР°Р»РѕС‚Рѕ.
+    #РўРѕ Рµ РЅСѓР¶РЅРѕ Р·Р° РґР° РјРѕР¶Рµ РґР° СЃРµ С‚СЉСЂСЃРё РЅРµС‰Рѕ РџР Р•Р”Р (РІР°Р»СЊРѕСЂ,*) Р±РµР· РґР° СЃРµ Р·Р°РєР°С‡Р° transFrom,
+    #   С‚.Рµ. РґР° СЃРµ РїСЂРµРґСЃС‚Р°РІРё transFrom=РќРЈР›Рђ Р±РµР· РґР° СЃРµ Р·РЅР°Рµ РєР°РєРІРѕ Рµ РІСЂРµРјРµ.
 
     TIME_CLASS4check = None       #XXX MUST be set for now... to be removed later
     def _intokey( me, v,t, step =0):

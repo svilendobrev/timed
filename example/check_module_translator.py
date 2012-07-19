@@ -1,13 +1,11 @@
-#$Id$
-# -*- coding: cp1251 -*-
 
 ##################### module_timed, translator, Timed2
 #either run from inside tests/ or set PYTHONPATH=tests/ or this below:
 #sys.path.append( 'tests/')
-import module_timed
+from timed import module_timed
 from datetime import datetime, timedelta
 
-from timed2 import Timed2
+from timed.timed2 import Timed2
 class Timed2dict( Timed2):
     def time2key_valid_trans( me, time):            return (time['valid'], time['trans'])
     def key_valid_trans2time( me, (trans, valid)):  return dict( trans=trans, valid=valid)
@@ -22,7 +20,7 @@ class Customer:
             name   = me.name.get( time),
             salary = me.salary.get( time),
         )
-from translator import Translator
+from timed.translator import Translator
 def dod_calculate( customer, dod, time):
     t = Translator( time, salary=customer.salary, dod=dod, name=customer.name)
     return t.dod and t.dod.dod( t.salary) or 0, t.salary, t.name

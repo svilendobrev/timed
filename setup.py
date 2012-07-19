@@ -1,23 +1,22 @@
 #$Id$
-# -*- coding: cp1251 -*-
+# -*- coding: utf8 -*-
 
 NEED_DEFAULT_CONTEXT = 1
 from timecontext import TimeContext
 
-from util.stacks import Stack
-#from util.stacks import StackPerThread as Stack
+from util import stacks, datetimez
 
 #maybe import all visible stuff here?
 #from objects    import TimedObject, TimedModule
 #from translator import Translator, Translator1
 
-# този обект държи началния NEED_DEFAULT_CONTEXT.
+# С‚РѕР·Рё РѕР±РµРєС‚ РґСЉСЂР¶Рё РЅР°С‡Р°Р»РЅРёСЏ NEED_DEFAULT_CONTEXT.
 class _default: pass
 
 def setup( Time, now, Delta, Time_type =None, checkTime =None ):
-    '''прави и държи началния NEED_DEFAULT_CONTEXT.
-    след изчезването на този обект, стекът трябва да е празен.
-    може и трябва да има точно един такъв обект - иначе се прави нов стек ...
+    '''РїСЂР°РІРё Рё РґСЉСЂР¶Рё РЅР°С‡Р°Р»РЅРёСЏ NEED_DEFAULT_CONTEXT.
+    СЃР»РµРґ РёР·С‡РµР·РІР°РЅРµС‚Рѕ РЅР° С‚РѕР·Рё РѕР±РµРєС‚, СЃС‚РµРєСЉС‚ С‚СЂСЏР±РІР° РґР° Рµ РїСЂР°Р·РµРЅ.
+    РјРѕР¶Рµ Рё С‚СЂСЏР±РІР° РґР° РёРјР° С‚РѕС‡РЅРѕ РµРґРёРЅ С‚Р°РєСЉРІ РѕР±РµРєС‚ - РёРЅР°С‡Рµ СЃРµ РїСЂР°РІРё РЅРѕРІ СЃС‚РµРє ...
     '''
     TimeContext.Time  = Time
     TimeContext.Delta = Delta
@@ -25,8 +24,9 @@ def setup( Time, now, Delta, Time_type =None, checkTime =None ):
     TimeContext.Time_type = Time_type
     if checkTime: TimeContext.checkTime = checkTime
 
-    '''един единствен текущ времеви контекст - и всички го ползват.
-        освен ако трябват успоредни контексти... едва ли.
+    Stack = stacks.Stack    #StackPerThread
+    '''РµРґРёРЅ РµРґРёРЅСЃС‚РІРµРЅ С‚РµРєСѓС‰ РІСЂРµРјРµРІРё РєРѕРЅС‚РµРєСЃС‚ - Рё РІСЃРёС‡РєРё РіРѕ РїРѕР»Р·РІР°С‚.
+        РѕСЃРІРµРЅ Р°РєРѕ С‚СЂСЏР±РІР°С‚ СѓСЃРїРѕСЂРµРґРЅРё РєРѕРЅС‚РµРєСЃС‚Рё... РµРґРІР° Р»Рё.
     '''
     TimeContext.stack = Stack( 'time', type= TimeContext)
 
@@ -66,13 +66,13 @@ def _setup4iso( Time, now ):
     )
 
 def USE_datetime4iso():
-    from util.datetimez import datetime
+    datetime = datetimez.datetime
     return _setup4iso(
         Time  = datetime,
         now   = datetime.now,
     )
 def USE_date4iso():
-    from util.datetimez import date
+    date = datetimez.date
     return _setup4iso(
         Time  = date,
         now   = date.today,

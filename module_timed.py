@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+# -*- coding: utf8 -*-
 def errorer( oserr):
     print oserr
 
@@ -36,7 +36,7 @@ class _module2time_converter:
         raise NotImplementedError
         if module.needed: module = loader()
         time = me.maketime( me.str2time1( t1), me.mod2time1( module.t2), whatever-maketime-handles )
-            #time трябва да е валидно за използваната Timed основа
+            #time С‚СЂСЏР±РІР° РґР° Рµ РІР°Р»РёРґРЅРѕ Р·Р° РёР·РїРѕР»Р·РІР°РЅР°С‚Р° Timed РѕСЃРЅРѕРІР°
         return time, module or None
 
     def _fname2times( me, modname):
@@ -84,11 +84,11 @@ class Module( object):
     and as such works with any (ascending) representation of time/s
     '''
 
-    WALK_INITIALY = 1   #дали да се зареди историята в началото или само при поискване
-    WALK_SUBDIRS  = 0   #първото ниво май стига
+    WALK_INITIALY = 1   #РґР°Р»Рё РґР° СЃРµ Р·Р°СЂРµРґРё РёСЃС‚РѕСЂРёСЏС‚Р° РІ РЅР°С‡Р°Р»РѕС‚Рѕ РёР»Рё СЃР°РјРѕ РїСЂРё РїРѕРёСЃРєРІР°РЅРµ
+    WALK_SUBDIRS  = 0   #РїСЉСЂРІРѕС‚Рѕ РЅРёРІРѕ РјР°Р№ СЃС‚РёРіР°
 
-        #може ли да има невалидни/фалшиви модули? т.е. има го файла, ама вътре не е модул
-        #тогава май трябва да се зарежда/проверява всичко първоначално...
+        #РјРѕР¶Рµ Р»Рё РґР° РёРјР° РЅРµРІР°Р»РёРґРЅРё/С„Р°Р»С€РёРІРё РјРѕРґСѓР»Рё? С‚.Рµ. РёРјР° РіРѕ С„Р°Р№Р»Р°, Р°РјР° РІСЉС‚СЂРµ РЅРµ Рµ РјРѕРґСѓР»
+        #С‚РѕРіР°РІР° РјР°Р№ С‚СЂСЏР±РІР° РґР° СЃРµ Р·Р°СЂРµР¶РґР°/РїСЂРѕРІРµСЂСЏРІР° РІСЃРёС‡РєРѕ РїСЉСЂРІРѕРЅР°С‡Р°Р»РЅРѕ...
     LAZY_LOAD = 1
 
     class Ptr( object):
@@ -188,7 +188,7 @@ class Module( object):
 
     def walk_dir( me):
         name = me.name
-            # какво да се прави с главния/коренния файл? нищо.
+            # РєР°РєРІРѕ РґР° СЃРµ РїСЂР°РІРё СЃ РіР»Р°РІРЅРёСЏ/РєРѕСЂРµРЅРЅРёСЏ С„Р°Р№Р»? РЅРёС‰Рѕ.
             #root = me._load_root_module()
             #me.put( root, '0')  #???
 
