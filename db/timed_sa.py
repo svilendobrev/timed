@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+# -*- coding: utf8 -*-
 
 '''
 times: 1t/2t
@@ -103,7 +103,7 @@ class _versions( object):
         return query
 
     def single_lastver( me, oid, where =None, **kargs4time):
-        '''1t: last version of single object / последната версия на един обект'''
+        '''1t: last version of single object / РїРѕСЃР»РµРґРЅР°С‚Р° РІРµСЂСЃРёСЏ РЅР° РµРґРёРЅ РѕР±РµРєС‚'''
         if _debug: print 'single_lastver oid=%(oid)s where=%(where)s times=%(kargs4time)s' % locals()
         if kargs4time: me.filter_time( **kargs4time)
         query = me._query( and_clauses_or_None( me._where_time, where, me.filter_type() ))
@@ -240,7 +240,7 @@ class versions_1t( _versions):
 
 
     def _all_lastver( me, where =None, alias ='g2'):
-        '''last versions of all objects: / последните версии на много обекти:
+        '''last versions of all objects: / РїРѕСЃР»РµРґРЅРёС‚Рµ РІРµСЂСЃРёРё РЅР° РјРЅРѕРіРѕ РѕР±РµРєС‚Рё:
             for each distinct .oid,
                 get those of maximum .time      #g1
                     of which for each distinct .time,
@@ -333,7 +333,7 @@ class versions_2t( versions_1t):
 
 
     def _all_lastver( me, where =None):
-        '''last versions of all objects: / последните версии на много обекти:
+        '''last versions of all objects: / РїРѕСЃР»РµРґРЅРёС‚Рµ РІРµСЂСЃРёРё РЅР° РјРЅРѕРіРѕ РѕР±РµРєС‚Рё:
             for each distinct .oid,
                 get those of maximum .time                  #g1
                     of which for each distinct .time,

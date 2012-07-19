@@ -1,5 +1,4 @@
-#$Id$
-# -*- coding: cp1251 -*-
+
 '''
 this must test all additional aspects of bitemporal behaviour in "real database":
     - allInstances from certain TimeContext point of view, with >1 timed objects in same db table
@@ -13,7 +12,7 @@ subject under test:
     allInstances/get_allobj_lastversion
     get_version_history
 '''
-import engine.timed.tests.test_base as satest
+import timed.tests.test_base as satest
 
 if 0:
     from dbcook.usage.static_type import sa2static as orm
@@ -52,7 +51,7 @@ config = Config()
 sam.config = config
 import sys
 
-from engine.timed.tests.protocol import test_protocol2Timed_protocol
+from timed.tests.protocol import test_protocol2Timed_protocol
 class TEST:
     only_days = True
     Time = only_days and Number or Date
@@ -109,7 +108,7 @@ class TEST:
     second_hand = False
 print TEST.revision4trans and 'revision4trans'
 
-import engine.timed.db.config as timed2_config
+import timed.db.config as timed2_config
 timed2_config.db_id_name    = orm.builder.column4ID.name
 timed2_config.ValidTimeType = TEST.Time
 timed2_config.TransTimeType = TEST.revision4trans and Number or TEST.Time
@@ -299,7 +298,7 @@ def put( me, obj, time ):
 
 if __name__ == '__main__':
     import sys
-    import engine.timed.db.timed2_dbcook as timed2
+    import timed.db.timed2_dbcook as timed2
     timed2.Timed2Mixin.revision4trans = 'rev' in sys.argv
     class DB_( object):
         session = None #have flush()

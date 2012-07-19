@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+# -*- coding: utf8 -*-
 
 from sqlalchemy import select, func
 from sqlalchemy.orm import class_mapper
@@ -15,7 +15,7 @@ def _get_discriminating_clause( klas, aliased_table):
     discriminator_column = mapper.polymorphic_on
     if not discriminator_column: return None
 
-    if aliased_table:   #XXX трябва да мине през aliased_table.corresponding_column()
+    if aliased_table:   #XXX С‚СЂСЏР±РІР° РґР° РјРёРЅРµ РїСЂРµР· aliased_table.corresponding_column()
         discriminator_column = aliased_table.corresponding_column( discriminator_column)
     #print '\n\nDISC_COL:', discriminator_column, discriminator_column.table
 
