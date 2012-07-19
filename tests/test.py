@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+
 from test_base import *
 
 if __name__ == '__main__':

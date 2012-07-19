@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+
 from sqlalchemy import Numeric
 
 revision4trans  = False

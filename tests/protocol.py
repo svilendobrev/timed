@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+
 
 # see test_base._Timed2_withDisabled_protocol
 

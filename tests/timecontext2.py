@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+
 
 from setup import TimeContext, USE_date
 USE_date()

@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+
 from disabled import Disabled4Timed
 from protocol import test_protocol2Timed_protocol
 

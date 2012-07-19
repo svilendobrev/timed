@@ -1,5 +1,5 @@
 #$Id$
-# -*- coding: cp1251 -*-
+
 '''Timed2 aspect'''
 
 import config
