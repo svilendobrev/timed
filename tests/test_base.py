@@ -1,7 +1,6 @@
-#$Id$
-# -*- coding: cp1251 -*-
-from engine.testutils import testMain
-from engine.testbase import Case
+
+from svd_util.testeng.testutils import testMain
+from svd_util.testeng.testbase import Case
 from datetime import datetime
 VERBOSE = 0
 
